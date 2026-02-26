@@ -158,18 +158,18 @@ def solve_eigenproblem(M_glob, K_glob, C=None):
     # 1. Korak - izračun L in tvorba reduced masne in togostne matrike
 
     if C is not None:
-        L = np.linalg.null_space(C)
+        L = sp.linalg.null_space(C)
         M_red = L.T @ M_glob @ L
         K_red = L.T @ K_glob @ L
 
         # 2. Korak izračun lastnih vrednosti
-        eig_vals, eig_vecs = sp.linalg.eigh(M_red, K_red)
+        eig_vals, eig_vecs = sp.linalg.eigh(K_red, M_red)
 
         # 3. Korka preslikava lastnih vekotrjev v realne koordinate
         eig_vecs = L@eig_vecs
 
     else:
-        eig_vals, eig_vecs = sp.linalg.eigh(M_glob, K_glob)
+        eig_vals, eig_vecs = sp.linalg.eigh(K_glob, M_glob)
     
     return eig_vals, eig_vecs
     
