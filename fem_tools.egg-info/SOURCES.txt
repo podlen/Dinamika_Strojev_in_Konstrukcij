@@ -1,0 +1,8 @@
+setup.py
+fem_tools/2DTruss.py
+fem_tools/__init__.py
+fem_tools/visualize.py
+fem_tools.egg-info/PKG-INFO
+fem_tools.egg-info/SOURCES.txt
+fem_tools.egg-info/dependency_links.txt
+fem_tools.egg-info/top_level.txt
