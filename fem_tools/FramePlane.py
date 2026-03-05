@@ -6,7 +6,38 @@ import scipy as sp
 
 # update function so elements can have different A,E,rho
 def MK_global(elementi, vozlisca, A, E, I, rho):
+    """
+    Assemble global mass and stiffness matrices for a 2D frame.
 
+    Each node carries 3 DOFs: ux, uy, θz (translation x, translation y,
+    rotation about z).  The local element (6×6) combines an axial (truss)
+    contribution on DOFs [0, 3] and a transverse (Euler–Bernoulli beam)
+    contribution on DOFs [1, 2, 4, 5], then rotates to the global frame
+    via the transformation matrix T(φ).
+
+    Parameters
+    ----------
+    elementi : np.ndarray, shape (n_elem, 2)
+        Element connectivity — each row ``[i, j]`` holds the start-
+        and end-node indices of one frame element.
+    vozlisca : np.ndarray, shape (n_nodes, 2)
+        Nodal coordinates ``(x, y)`` for every node.
+    A : float
+        Cross-sectional area [m²].
+    E : float
+        Young's modulus [Pa].
+    I : float
+        Second moment of area (moment of inertia) [m⁴].
+    rho : float
+        Material density [kg/m³].
+
+    Returns
+    -------
+    M_glob : np.ndarray, shape (n_dof, n_dof)
+        Assembled global consistent mass matrix (n_dof = 3 × n_nodes).
+    K_glob : np.ndarray, shape (n_dof, n_dof)
+        Assembled global stiffness matrix.
+    """
 
     # prliminary definitions
     def M_beam_e(A, Le, ρ):

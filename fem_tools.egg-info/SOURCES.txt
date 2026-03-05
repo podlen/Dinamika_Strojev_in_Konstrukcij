@@ -1,7 +1,9 @@
 README.md
 setup.py
+fem_tools/FramePlane.py
 fem_tools/TrussPlane.py
 fem_tools/__init__.py
+fem_tools/py.typed
 fem_tools/visualize.py
 fem_tools.egg-info/PKG-INFO
 fem_tools.egg-info/SOURCES.txt
