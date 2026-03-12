@@ -185,4 +185,3 @@ def solve_eigenproblem(M_glob, K_glob, C=None):
     return eig_vals, eig_vecs
     
 
-

@@ -3,3 +3,4 @@
 from . import TrussPlane
 from . import FramePlane
 from . import visualize
+from .Mesh import MeshManager
