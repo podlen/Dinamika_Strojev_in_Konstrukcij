@@ -13,8 +13,9 @@ setup(
     description="Finite-element utilities for truss and frame dynamics.",
     long_description=README.read_text(encoding="utf-8") if README.exists() else "",
     long_description_content_type="text/markdown",
+    # Automatically discover the DSKM package
     packages=find_packages(),
     include_package_data=True,
     python_requires=">=3.9",
-    install_requires=["numpy", "scipy", "matplotlib"],
+    install_requires=["numpy", "scipy", "matplotlib", "pyvista", "open3d", "pillow"],
 )
