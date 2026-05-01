@@ -29,7 +29,7 @@ class Visualizer:
     # ==========================================
     # 1. LIVE PREVIEW VISUALIZERS (PyVista)
     # ==========================================
-    def plot_part(part):
+    def plot_part(self, part):
         """
         Prikaže makro-geometrijo. Uporabi to med gradnjo 'Part' objekta,
         da vidiš številke Keynode-ov in lahko pravilno definiraš linije

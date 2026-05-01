@@ -1,4 +1,3 @@
-from scipy.stats import f_oneway
 import numpy as np
 import scipy as sp
 import scipy.sparse as sps
