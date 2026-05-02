@@ -8,8 +8,7 @@ except ImportError:
 
 class Visualizer:
     """
-    Modul za vizualizacijo in poprocesiranje rezultatov.
-    Vključuje predoglede modelov, grafe odzivov in 3D animacije za različne analize.
+    Modul za vizualizacijo in procesiranje rezultatov.
     """
     def __init__(self, mesh, dof_manager=None, load_manager=None):
         if pv is None:
@@ -21,21 +20,16 @@ class Visualizer:
         
         self.pts = np.array([node.coords for node in mesh.nodes])
         
-        # Identify keynodes mathematically
         self.keynode_indices =[]
         if hasattr(mesh, '_node_id_map'):
             self.keynode_indices = [idx for name, idx in mesh._node_id_map.items() if "key_" in name]
 
-    # ==========================================
-    # 1. LIVE PREVIEW VISUALIZERS (PyVista)
-    # ==========================================
     def plot_part(self, part):
         """
-        Prikaže makro-geometrijo. Uporabi to med gradnjo 'Part' objekta,
-        da vidiš številke Keynode-ov in lahko pravilno definiraš linije
+        Prikaže makro-geometrijo. 
         """
         if pv is None: return
-        plotter = pv.Plotter(title="Blueprint - Macro Geometry")
+        plotter = pv.Plotter(title="Makro-geometrija")
         plotter.add_axes()
 
         pts = np.array(list(part.keynodes.values()))
@@ -47,44 +41,29 @@ class Visualizer:
             idx2 = keys.index(n2)
             lines.extend([2, idx1, idx2])
             
-        # 1. ALWAYS DRAW THE POINTS EXPLICITLY (This fixes the missing nodes)
+        # Dodamo vozlišča
         if len(pts) > 0:
             plotter.add_points(pts, color='red', point_size=20, render_points_as_spheres=True)
             
-        # 2. DRAW THE LINES
+        # Mreža
         if lines:
             poly = pv.PolyData(pts, lines=lines)
             plotter.add_mesh(poly, color='orange', line_width=5, render_lines_as_tubes=True)
-        
-        # 3. DRAW THE LABELS
-        if len(pts) > 0:
-            labels = [str(k) for k in keys]
-            plotter.add_point_labels(
-                pts, labels, 
-                font_size=24, 
-                text_color='black',
-                shape='rounded_rect',
-                shape_color='white',
-                shape_opacity=0.8,   # Solid enough to read, transparent enough to see behind
-                always_visible=True, # Forces text to render on top of everything
-                show_points=False    # We already drew the red spheres manually
-            )
             
         plotter.show()
 
-    def plot_mesh(self, show_nodes='all'):
+    def plot_mesh(self):
         """
-        Prikaže diskretizirano mrežo. Uporabi to po klicu mesh.generate_mesh(),
-        da prebereš ID-je vozlišč (Node IDs) in jim predpišeš robne pogoje/sile.
+        Prikaže diskretizirano mrežo.
         """
-        plotter = pv.Plotter(title="Blueprint - Micro Mesh")
+        plotter = pv.Plotter(title="Mreža")
         plotter.add_axes(label_size=(0.05, 0.05))
 
-        # 1. ALWAYS DRAW THE POINTS EXPLICITLY (The blue joints)
+        # 1. Dodamo vozlišča
         if len(self.pts) > 0:
             plotter.add_points(self.pts, color='blue', point_size=12, render_points_as_spheres=True)
 
-        # 2. DRAW THE MESH LINES
+        # 2. Mreža
         lines =[]
         for e in self.mesh.elements:
             lines.extend([2, e.n1.id, e.n2.id])
@@ -92,46 +71,8 @@ class Visualizer:
         if lines:
             poly = pv.PolyData(self.pts, lines=lines)
             plotter.add_mesh(poly, color='lightblue', line_width=3)
-
-        # 3. Jasne, velike oznake vozlišč (Node IDs + Keynodes)
-        if show_nodes == 'all':
-            if hasattr(self.mesh, '_node_id_map'):
-                rev_map = {idx: name.replace('key_', '') for name, idx in self.mesh._node_id_map.items() if "key_" in name}
-            else:
-                rev_map = {}
-            labels =[]
-            for n in self.mesh.nodes:
-                if n.id in rev_map:
-                    labels.append(f"{n.id} (K:{rev_map[n.id]})")
-                else:
-                    labels.append(f"{n.id}")
-            pts_to_label = self.pts
             
-        elif show_nodes == 'keynodes' and self.keynode_indices:
-            labels =[]
-            for name, idx in self.mesh._node_id_map.items():
-                if "key_" in name:
-                    key_id = name.replace('key_', '')
-                    labels.append(f"{self.mesh.nodes[idx].id} (K:{key_id})")
-            pts_to_label = self.pts[self.keynode_indices]
-            
-        else:
-            labels = []
-            pts_to_label =[]
-
-        if len(labels) > 0:
-            plotter.add_point_labels(
-                pts_to_label, labels, 
-                font_size=20, 
-                text_color='black',
-                shape='rounded_rect',
-                shape_color='white',
-                shape_opacity=0.8,
-                always_visible=True,
-                show_points=False
-            )
-
-        # 4. Robni pogoji (Rdeče krogle - še večje, da prekrijejo modre spoje)
+        # Robni pogoji (Rdeče krogle)
         if self.dof_manager:
             support_pts = [self.pts[list(const.keys())[0] // 6] for const in self.dof_manager.constraints if len(const) == 1]
             if support_pts:
@@ -151,9 +92,6 @@ class Visualizer:
 
         plotter.show()
 
-    # ==========================================
-    # 2. ANALYTICS (Matplotlib)
-    # ==========================================
 
     def print_frequency_table(self, eig_vals):
         freqs_hz = np.sqrt(np.abs(eig_vals)) / (2 * np.pi)
@@ -189,45 +127,29 @@ class Visualizer:
         dof_map = {'ux':0, 'uy':1, 'uz':2, 'rx':3, 'ry':4, 'rz':5}
         idx = 6 * node_id + dof_map[dof.lower()]
         
-        # 2. Extract the complex response for this specific DOF
+        # Odziv vozlišča
         u_complex = U_harm[idx, :]
-        
-        # 3. Calculate Amplitude (converting to mm usually looks better)
-        amplitude = np.abs(u_complex) * 1000 
-        
-        # 4. Calculate Phase (in radians)
+        amplitude = np.abs(u_complex)
         raw_phase = np.angle(u_complex)
         
-        # --- THE FIX ---
-        # Unwrap the phase to remove the pi / -pi jumps
+        # Odpravljanje skokov 
         continuous_phase = np.unwrap(raw_phase)
-        # ---------------
-        
-        # Optional: Convert to degrees for easier reading on the graph
+        # Preverjanje v stopinjah
         phase_deg = np.degrees(continuous_phase)
         f_hz = f_rad / (2 * np.pi)
 
-        # 5. Plotting commands (matplotlib)
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
-        
-        # Amplitude Plot
         ax1.plot(f_hz, amplitude, 'b-')
         ax1.set_ylabel('Amplitude [mm]')
         ax1.grid(True)
         
-        # Phase Plot
         ax2.plot(f_hz, phase_deg, 'b-')
         ax2.set_ylabel('Phase [deg]')
         ax2.set_xlabel('Frequency [Hz]')
-        # Set y-ticks to show standard phase angles
         ax2.set_yticks(np.arange(180, -541, -90)) 
         ax2.grid(True)
         
         plt.show()
-
-    # ==========================================
-    # 3. OPEN3D ANIMATIONS
-    # ==========================================
     
     def _setup_open3d_scene(self, title, highlight_node=None):
         """Helper to set up the Open3D environment. Now supports highlighting a specific node"""
@@ -237,14 +159,13 @@ class Visualizer:
         
         o3d_lines = [[e.n1.id, e.n2.id] for e in self.mesh.elements]
         
-        # Invisible bounding box to lock camera
         min_b = np.min(self.pts, axis=0) - ranges * 0.5 - np.array([model_size*0.1]*3)
         max_b = np.max(self.pts, axis=0) + ranges * 0.5 + np.array([model_size*0.1]*3)
         bbox = o3d.geometry.AxisAlignedBoundingBox(min_b, max_b)
         bbox_ls = o3d.geometry.LineSet.create_from_axis_aligned_bounding_box(bbox)
         bbox_ls.paint_uniform_color([1.0, 1.0, 1.0]) 
         
-        # Geometries
+        # Geometrija
         ls_orig = o3d.geometry.LineSet()
         ls_orig.points = o3d.utility.Vector3dVector(self.pts)
         ls_orig.lines = o3d.utility.Vector2iVector(o3d_lines)
@@ -259,7 +180,7 @@ class Visualizer:
         pcd.points = o3d.utility.Vector3dVector(self.pts)
         pcd.colors = o3d.utility.Vector3dVector([[1.0, 0.2, 0.2]] * len(self.pts))
 
-        # Highlight specific node with a bright gold sphere
+        # Highlite node
         hl_sphere = None
         if highlight_node is not None and 0 <= highlight_node < len(self.pts):
             hl_sphere = o3d.geometry.TriangleMesh.create_sphere(radius=model_size*0.04)

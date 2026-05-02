@@ -1,25 +1,22 @@
-# modul za predpisovanje robnih pogojev (RP)
-
 import numpy as np
 import scipy.linalg as spla
 
 class DOFManager:
     """
     Razred za upravljanje prostostnih stopenj in robnih pogojev.
-    Uporablja metodo ničelnega prostora (Null Space) za redukcijo sistema.
     """
     def __init__(self, mesh):
-        """Inicializacija upravljalnika z dano mrežo elementov."""
+        """Inicializacija z dano mrežo elementov."""
         self.mesh = mesh
         self.n_nodes = len(mesh.nodes)
         self.n_dof = 6 * self.n_nodes
         
-        # Shranjujemo enačbe robnih pogojev kot slovarje
+        # Shranjujemo enačbe robnih pogojev kot dict
         # Format: {dof_index: coefficient} -> predstavlja enačbo coef * U[dof] = 0
         self.constraints = []
         
     def add_constraint(self, dof_coeffs: dict):
-        """Doda poljubno enačbo robnega pogoja v obliki slovarja koeficientov."""
+        """Doda poljubno enačbo robnega pogoja v obliki dict koeficientov."""
         self.constraints.append(dof_coeffs)
 
     def fix_node(self, node_id: int, dofs: list[int]):
@@ -68,7 +65,7 @@ class DOFManager:
 
     def get_L_matrix(self):
         """
-        Izračuna in vrne projekcijsko matriko L (ničelni prostor).
+        Izračuna in vrne  matriko L (ničelni prostor).
         Omogoča preslikavo: U_global = L * U_reduced.
         """
         C = self.get_C_matrix()

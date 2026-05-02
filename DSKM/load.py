@@ -1,21 +1,16 @@
-# modul za predpisovanje zunanjih obremenitev (Loads)
-
 import numpy as np
 import scipy.spatial as spatial
 
 class LoadManager:
     """
-    Upravljalnik obremenitev. Skrbi za dodajanje zunanjih sil 
-    in sestavo globalnega vektorja obremenitev.
+    Za definicijo zunanjih obremenitev za harmonsko analizo.
     """
     def __init__(self, mesh, dof_manager):
-        """Inicializacija z mrežo in upravljalnikom prostostnih stopenj."""
         self.mesh = mesh
         self.dof_manager = dof_manager
         self.n_dof = dof_manager.n_dof
         
-        # F_glob je zdaj COMPLEX, da podpira fazne zamike (F0 * e^(i*phi))
-        self.F_glob = np.zeros(self.n_dof, dtype=complex)
+        self.F_glob = np.zeros(self.n_dof, dtype=complex) # complex za fazne zamike
         
         # Zgradimo KDTree za hitro iskanje vozlišč po koordinatah (če želimo obremenitev na točki)
         if len(self.mesh.nodes) > 0:
@@ -24,12 +19,10 @@ class LoadManager:
         else:
             self.tree = None
 
-    # --- 1. HARMONSKA
     
     def add_nodal_load(self, node_id: int, fx=0.0, fy=0.0, fz=0.0, mx=0.0, my=0.0, mz=0.0):
         """
         Doda točkovno obremenitev neposredno na določeno vozlišče (preko ID-ja).
-        Podpira tudi kompleksne vrednosti (za harmonsko analizo).
         """
         idx = 6 * node_id
         self.F_glob[idx:idx+6] += np.array([fx, fy, fz, mx, my, mz], dtype=complex)
@@ -41,18 +34,12 @@ class LoadManager:
         return node_id
 
 
-
-    # --- 3. DOSTOP DO VEKTORJEV ---
-
     def get_global_force(self):
         """Vrne globalni kompleksni vektor obremenitev (za Harmonsko analizo)."""
         return self.F_glob.copy()
 
-
-
     def clear_loads(self):
         """
-        Počisti vse dodane harmonske / statične sile.
-        Uporabno, ko v isti skripti prehajamo med različnimi analizami.
+        Počisti vse dodane sile.
         """
         self.F_glob = np.zeros(self.n_dof, dtype=complex)

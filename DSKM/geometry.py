@@ -1,5 +1,3 @@
-# modul za sestavljanje geometrije
-
 import numpy as np
 
 class Material:
@@ -20,8 +18,7 @@ class Material:
 class Section:
     """
     Geometrijske lastnosti prereza.
-    Vsebuje površino (A), vztrajnostna momenta (Iy, Iz), torzijsko (It) 
-    in polarno konstanto (Ip).
+    Vsebuje površino (A), vztrajnostna momenta (Iy, Iz), torzijski vztrajnostni moment (It) in polarni vztrajnostni moment (Ip).
     """
     def __init__(self, name: str, A: float, Iy: float, Iz: float, It: float,  Ip: float):
         self.name = name
@@ -33,7 +30,7 @@ class Section:
 
 class Node:
     """
-    Predstavlja posamezno vozlišče v prostoru s podanim ID-jem in koordinatami (x, y, z).
+    Predstavlja vozlišče v prostoru s podanim ID-jem in koordinatami (x, y, z).
     """
     def __init__(self, node_id: int, coords: list[float]):
         self.id = node_id
@@ -42,7 +39,7 @@ class Node:
 class Element:
     """
     Osnovni končni element, ki povezuje dve vozlišči.
-    Ima definirane materialne in prerezne lastnosti ter orientacijski vektor (v_up).
+    Ima definirane materialne in geometrijske lastnosti ter orientacijski vektor (v_up).
     """
     def __init__(self, elem_id: int, n1: Node, n2: Node, material: Material, section: Section, v_up: list[float] = [0.0, 0.0, 1.0]):
         self.id = elem_id
@@ -77,7 +74,7 @@ class Part:
         self._next_line_id = 0
 
     def add_keynode(self, coords: list[float]) -> int:
-        """Doda ključno točko, ki definira oglišča makro-geometrije."""
+        """Doda ključno točko - točka, ki definira geometrijo modela."""
         nid = self._next_node_id 
         self.keynodes[nid] = np.array(coords, dtype=float) 
         self._next_node_id += 1
@@ -94,8 +91,7 @@ class Part:
 
     def assign_property(self, line_ids: list[int], material: Material, section: Section, elem_type: str = 'Frame3D', v_up: list[float] = [0.0, 0.0, 1.0]):
         """
-        Določi material, prerez, tip elementa (nosilec ali palica) 
-        in orientacijo izbranim linijam makro-geometrije.
+        Določi material, prerez, tip elementa (nosilec ali palica) in v_up izbranim linijam.
         """
         for lid in line_ids:
             self.properties[lid] = {

@@ -1,5 +1,3 @@
-# modul za pripravo mreže
-
 import numpy as np
 from .geometry import Node, Truss3D, Frame3D, Part
 
@@ -15,7 +13,7 @@ class Mesh:
     
     def generate_mesh(self, part: Part, global_size: float = None, num_elements_per_line: int = None):
         """
-        Zgenerira mrežo končnih elementov iz definiranih linij makro-geometrije.
+        Zgenerira mrežo končnih elementov.
         Uporabi določeno globalno velikost elementa (global_size) ali 
         določeno število elementov na linijo (num_elements_per_line).
         """
@@ -23,7 +21,7 @@ class Mesh:
         node_count = 0
         elem_count = 0
         
-        # ustvarjanje objektov Node iz ključnih točk
+        # Ustvarjanje objektov Node iz ključnih točk
         for kn_id, coords in part.keynodes.items():
             node = Node(node_count, coords.tolist())
             self.nodes.append(node)
@@ -40,7 +38,7 @@ class Mesh:
             mat = prop['material']
             sec = prop['section']
             etype = prop['type']
-            v_up = prop['v_up'] # Pridobimo orientacijski vektor
+            v_up = prop['v_up']
             
             # Pridobimo dejanska vozlišča (Node objects) za začetek in konec linije
             start_node_idx = self._node_id_map[f"key_{n1_id}"]
@@ -48,14 +46,14 @@ class Mesh:
             start_node = self.nodes[start_node_idx]
             end_node = self.nodes[end_node_idx]
             
-            # CE JE TRUSS -> NE DISKRETIZIRAMO naredimo en element in gremo na naslednjo linijo.
+            # Truss -> ne diskretiziramo naredimo en element in gremo na naslednjo linijo.
             if etype == "Truss3D":
                 elem = Truss3D(elem_count, start_node, end_node, mat, sec, v_up)
                 self.elements.append(elem)
                 elem_count += 1
-                continue # Preskoči preostanek in pojdi na naslednjo linijo
+                continue 
             
-            # --- Od tu naprej se koda izvede SAMO za Frame3D ---
+            # Samo za frame
             
             p1 = part.keynodes[n1_id] 
             p2 = part.keynodes[n2_id]
@@ -68,14 +66,14 @@ class Mesh:
             else:
                 n_elem = 1
                 
-            # diskretizacija linije na elemente
+            # Diskretizacija linije na elemente
             x_c = np.linspace(p1[0], p2[0], n_elem + 1)
             y_c = np.linspace(p1[1], p2[1], n_elem + 1)
             z_c = np.linspace(p1[2], p2[2], n_elem + 1)
             
             last_node_idx = start_node_idx
             
-            # definiranje manjših elementov (vmesnih)
+            # Definiranje  elementov 
             for i in range(1, n_elem):
                 coords = [x_c[i], y_c[i], z_c[i]]
                 node = Node(node_count, coords)
