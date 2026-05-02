@@ -220,7 +220,20 @@ class GlobalAssembly:
         x = d / L[:, None]
         z = np.cross(x,v_ref)
 
-        z_norm = np.linalg.norm(z, axis=1)       
+        z_norm = np.linalg.norm(z, axis=1)
+        zero_mask = z_norm < 1e-6
+        if np.any(zero_mask):
+            # Poskusimo najprej z vektorjem [0, 1, 0]
+            z_temp = np.cross(x[zero_mask], np.array([0, 1, 0]))
+            
+            # Če je x vzporeden z [0, 1, 0], bo z_temp še vedno 0. V tem primeru uporabimo [0, 0, 1].
+            still_zero = np.linalg.norm(z_temp, axis=1) < 1e-6
+            if np.any(still_zero):
+                z_temp[still_zero] = np.cross(x[zero_mask][still_zero], np.array([0, 0, 1]))
+                
+            z[zero_mask] = z_temp
+            z_norm = np.linalg.norm(z, axis=1)
+        
         z = z/z_norm[:, None] # normiranje vektorja
 
         y = np.cross(z,x)

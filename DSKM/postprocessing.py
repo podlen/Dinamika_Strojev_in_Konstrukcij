@@ -24,7 +24,8 @@ class Visualizer:
         if hasattr(mesh, '_node_id_map'):
             self.keynode_indices = [idx for name, idx in mesh._node_id_map.items() if "key_" in name]
 
-    def plot_part(self, part):
+    @staticmethod
+    def plot_part(part):
         """
         Prikaže makro-geometrijo. 
         """
