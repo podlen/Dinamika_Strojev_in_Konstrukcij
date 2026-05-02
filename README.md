@@ -114,7 +114,7 @@ Zvezek omogoča hitro preizkušanje različnih robnih pogojev in vzbujanj. Pripo
 
 ## Galerija rezultatov
 
-Spodaj so prikazane nekatere zmožnosti vizualizacije `DSKM` modula: generacijo končnih elementov, računanje harmonskega odziva ter izris modalnih oblik in časovne integracije. 
+Spodaj so prikazane nekatere zmožnosti vizualizacije `DSKM` modula: generacijo končnih elementov, računanje harmonskega odziva ter izris modalnih oblik in časovne integracije. Več animacij je na voljo v mapi `videos`.
 
 **Diskretizacija 3D konstrukcije (Mreženje)**
 ![Makro geometrija in mreža MKE](images/mesh.svg)
